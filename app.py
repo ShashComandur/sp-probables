@@ -182,7 +182,12 @@ def main():
     # Date input section
     col1, col2 = st.columns(2)
     with col1:
-        start_date = st.date_input("Start Date", value=date.today())
+        start_date = st.date_input(
+            "Start Date",
+            value=date.today(),
+            min_value=date.today(),
+            max_value=date.today(),
+        )
     with col2:
         max_date = date.today() + pd.Timedelta(days=10)
         end_date = st.date_input(
