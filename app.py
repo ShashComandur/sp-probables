@@ -150,7 +150,10 @@ def extract_pitcher_starts(
 
             if parsed_entry:
                 # Check if pitcher should be included (if player names provided)
-                if not player_names or parsed_entry["pitcher_name"] in player_names:
+                if (
+                    not player_names
+                    or parsed_entry["pitcher_name"].lower() in player_names
+                ):
                     # Combine parsed entry with rest of row data
                     full_row: Dict[str, str] = {
                         "Date": date_mapping.get(col_idx - 1, "Unknown"),
@@ -172,7 +175,7 @@ def extract_pitcher_starts(
 
 def main():
     st.set_page_config(page_title="SP Probables Tracker")
-    st.title("SP Probables Tracker")
+    st.title("Fantasy SP Probables Tracker")
 
     # URL input for HTML source
     url = "https://www.fangraphs.com/roster-resource/probables-grid"
@@ -202,7 +205,9 @@ def main():
             return
 
         # Convert player names to a list
-        players = [name.strip() for name in player_names.split("\n") if name.strip()]
+        players = [
+            name.strip().lower() for name in player_names.split("\n") if name.strip()
+        ]
 
         # Fetch and process HTML
         html_soup = fetch_html(url)
