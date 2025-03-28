@@ -104,7 +104,7 @@ def extract_dates_from_headers(soup: BeautifulSoup) -> Dict[int, str]:
 
 
 def extract_pitcher_starts(
-    soup: BeautifulSoup, player_names: List[str]
+    soup: BeautifulSoup, player_names: List[str], start_date: date, end_date: date
 ) -> pd.DataFrame:
     """
     Extract pitcher starts from the HTML soup
@@ -133,9 +133,6 @@ def extract_pitcher_starts(
     # Extract dates from headers
     date_mapping: Dict[int, str] = extract_dates_from_headers(soup)
 
-    # Extract table headers
-    headers: List[str] = [th.get_text(strip=True) for th in table.find_all("th")]
-
     # Prepare to store parsed data
     parsed_rows: List[Dict[str, str]] = []
 
@@ -153,6 +150,8 @@ def extract_pitcher_starts(
                 if (
                     not player_names
                     or parsed_entry["pitcher_name"].lower() in player_names
+                    and date_mapping.get(col_idx - 1) >= start_date.strftime("%Y-%m-%d")
+                    and date_mapping.get(col_idx - 1) <= end_date.strftime("%Y-%m-%d")
                 ):
                     # Combine parsed entry with rest of row data
                     full_row: Dict[str, str] = {
@@ -203,6 +202,9 @@ def main():
         if not url:
             st.warning("Please enter a URL")
             return
+        if start_date > end_date:
+            st.warning("Start date cannot be after end date")
+            return
 
         # Convert player names to a list
         players = [
@@ -214,7 +216,9 @@ def main():
 
         if html_soup:
             # Extract pitcher starts
-            pitcher_starts = extract_pitcher_starts(html_soup, players)
+            pitcher_starts = extract_pitcher_starts(
+                html_soup, players, start_date, end_date
+            )
 
             # Display results
             if not pitcher_starts.empty:
